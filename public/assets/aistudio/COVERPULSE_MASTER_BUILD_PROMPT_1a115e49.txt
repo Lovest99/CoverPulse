@@ -1,0 +1,242 @@
+MASTER BUILD PROMPT — COVERPULSE
+Healthcare Workforce Intelligence
+Tagline: Coverage, without the chaos.
+
+ROLE
+Act as a principal product designer, healthcare workforce domain specialist, security-minded SaaS architect, senior full-stack engineer, QA lead and pragmatic product manager. Build a production-grade, multi-tenant healthcare workforce coverage SaaS called CoverPulse. Do not create a generic HR dashboard or a superficial clickable prototype. Deliver a coherent, responsive, tested product with working end-to-end workflows, realistic seeded demo data, clear empty/error/loading states and maintainable architecture.
+
+IMPORTANT LEGAL / PRODUCT BOUNDARIES
+This is an independently developed product. Do not copy proprietary source code, private documentation, customer lists, credentials, confidential workflows, designs or data from any prior product or third party. Implement from this specification and public, general industry knowledge. Do not imply certification or regulatory compliance that has not been independently assessed. Treat AI as decision support, never as the authority for clinical staffing decisions.
+
+PRODUCT THESIS
+Healthcare providers lose time and money coordinating vacant shifts through calls, spreadsheets and disconnected systems. CoverPulse helps care organisations detect coverage gaps, identify eligible workers, distribute shift offers, automate response escalation and measure coverage performance. Initial market: Australian aged-care, disability-support and community-care providers. Product wedge: specialist shift coverage layer that can integrate with existing rostering/HR systems rather than forcing full system replacement.
+
+BRAND SYSTEM
+Name: CoverPulse
+Descriptor: Healthcare Workforce Intelligence
+Tagline: Coverage, without the chaos.
+Secondary campaign line: Smarter Workforce Coverage. A Healthier Tomorrow.
+Visual direction: modern healthcare technology; calm, credible, premium, precise, accessible.
+Colors:
+- Deep Blue #0B1F44
+- Primary Blue #0E8BFF
+- Cyan #06B6D4
+- Soft White #F8FAFC
+- Slate #52647D
+- Success #16A879
+- Warning #F59E0B
+- Danger #DC4C64
+Typography: Plus Jakarta Sans, fallback Inter/system sans.
+Use the supplied CoverPulse SVG logo assets where available. Preserve proportions and clear space. Use cyan sparingly for primary actions and active states. Avoid purple gradients, neon, glassmorphism, blobs, excessive shadows, stock illustrations and oversized rounded cards. Prefer editorial hierarchy, generous whitespace, restrained borders, subtle motion (150–250ms), clear data density and strong responsive layouts.
+
+TECHNICAL DIRECTION
+Preferred stack:
+- Next.js App Router + TypeScript
+- Tailwind CSS + shadcn/ui + Lucide icons
+- PostgreSQL with a typed ORM (Prisma or Drizzle)
+- Server-side API/actions with schema validation (Zod)
+- Authentication with secure sessions and MFA-ready architecture
+- Background jobs/queue for offer dispatch, retries, escalation and scheduled reminders
+- Object storage for documents
+- Email provider abstraction; SMS provider abstraction suitable for Australian delivery
+- Billing provider abstraction with subscription lifecycle webhooks
+- Observability: structured logs, error tracking, audit events and health checks
+If the environment dictates a different stack, explain the trade-off and preserve the architecture. Never put secrets in client code. Provide .env.example without real credentials.
+
+USER TYPES AND ACCESS
+1. Platform Super Admin: manages tenant accounts, plan configuration, platform health and support access with audited, time-limited elevation.
+2. Organisation Owner: manages organisation settings, facilities, billing and users.
+3. Operations Manager: manages shifts, coverage policies, workers, reporting and escalations for permitted facilities.
+4. Facility Manager: manages only assigned facilities.
+5. Workforce Coordinator: creates shifts, monitors offers and confirms coverage.
+6. Worker: maintains own profile, availability, qualifications, preferences and shift responses.
+7. Auditor/Read-only: sees authorised reports and audit records without editing.
+Enforce permissions server-side on every protected operation. Never rely only on hiding UI elements.
+
+MULTI-TENANCY
+- Tenant isolation must be enforced in the data access layer, not merely by UI filtering.
+- Every tenant-owned record has tenant_id; facility-scoped records also have facility_id.
+- Prevent cross-tenant reads, writes, exports, search results and file access.
+- Add automated tenant-isolation tests.
+- Support multiple facilities per organisation, configurable roles and facility-level access.
+- Provide a safe demo tenant with synthetic data.
+
+CORE MODULES
+A. Executive / Manager Dashboard
+- Coverage rate, open shifts, average time to first response, time to fill, estimated avoided agency/overtime cost, pending approvals and expiring credentials.
+- Trends with selectable periods and facility filters.
+- Upcoming shifts and urgent coverage queue.
+- Every KPI must have a clear definition, date range and drill-down.
+- Do not fabricate savings; label estimates and expose assumptions.
+
+B. Shift Management
+- Create, edit, duplicate, cancel and publish shifts.
+- Fields: facility, date, start/end time, break, role, required skills/qualifications, headcount, urgency, notes, budget/rate visibility policy and creator.
+- Support overnight shifts and timezone-safe storage; display in facility timezone.
+- Validate overlapping assignments, invalid durations, missing role requirements and publication state.
+- Shift states: Draft, Open, Broadcasting, Partially Covered, Covered, Cancelled, Expired.
+- Keep a complete shift event timeline.
+
+C. Workforce Directory
+- Worker profile: name, contact, preferred facilities, roles, skills, qualifications, credential expiry, availability, employment/engagement type, work restrictions, preferred contact channel and status.
+- Store only necessary personal information.
+- Qualification evidence with access controls, expiry reminders and review status.
+- Worker can update own availability and profile, subject to verification rules.
+- Never infer eligibility from an AI score.
+
+D. Eligibility and Matching Engine
+- Deterministic hard filters first: active worker, correct role, required verified qualifications, facility eligibility, availability, no overlapping accepted shift, working-hour/rest constraints configured by the organisation, and any mandatory restrictions.
+- Only after hard filters, rank eligible workers using transparent configurable factors: distance/travel preference where supplied, skills fit, stated preferences, response reliability and fair rotation.
+- Show managers the reason a worker is included or excluded; never expose sensitive attributes or protected-class inference.
+- AI may summarise options and explain trade-offs but cannot override hard eligibility rules.
+- Provide manual override only for authorised users, with mandatory reason and audit event; never permit bypass of legal or safety-critical requirements.
+- Build unit tests for edge cases and fairness review hooks.
+
+E. Coverage Autopilot
+- Manager selects a shift and a coverage policy.
+- Offer dispatch can be sequential, tiered or controlled parallel waves.
+- Configure response windows, candidate batch sizes, quiet hours, maximum attempts, reminders and escalation recipients.
+- Channels: in-app, email and SMS through provider adapters.
+- Track delivery, bounce, failure, opened (only where available), accepted, declined, expired and withdrawn events.
+- Use idempotency keys, retries with backoff, provider rate limits and dead-letter handling.
+- Stop further offers when the shift is fully covered or cancelled.
+- Escalate to coordinator/manager when no eligible worker accepts.
+- Never silently mark a shift covered; require an accepted eligible worker and any configured manager confirmation.
+- Prevent double booking under concurrent acceptance using database transactions/locking.
+
+F. Worker Experience (mobile-first PWA)
+- Sign in securely.
+- Home screen: next shift, open offers, alerts and availability status.
+- Offer detail: facility, role, date/time, expected duties, required credentials, pay details only where authorised, response deadline and contact instructions.
+- Accept/decline with confirmation and clear outcome.
+- View upcoming/past shifts, availability calendar, profile and qualifications.
+- Push notification capability where supported; graceful email/SMS fallback.
+- Accessible controls, low-bandwidth performance and clear offline/read-only behaviour.
+- Never allow offline acceptance to be treated as final until server confirmation.
+
+G. Analytics and Reporting
+- Fill rate = covered eligible shift positions / total published shift positions for selected period.
+- Time to first response and time to fill; define start/end events precisely.
+- Unfilled hours, late cancellations, offer acceptance rates, response by channel, facility and role.
+- Estimated cost impact must be configurable and transparently calculated from customer-provided assumptions.
+- Export CSV and PDF with permission checks and audit logging.
+- No employee performance ranking that could be misleading or used without context.
+
+H. Integrations
+- Integration settings and connection status.
+- Design adapter interfaces for rostering, HRIS, payroll and identity systems.
+- Start with CSV import/export and documented API/webhook contracts.
+- Webhook signing, replay protection, idempotency and delivery logs.
+- Do not claim integrations exist until implemented and tested.
+- Provide integration sandbox and sample payloads.
+
+I. Billing and Plans
+- Essential, Growth and Enterprise plan configuration.
+- Subscription status, trial, invoices, payment method link, usage and plan limits.
+- Pricing must be configurable by platform admin; do not hard-code launch prices into business logic.
+- Verify billing webhooks and handle retries and duplicate events.
+- Clearly distinguish subscription fees from usage-based SMS or integration charges.
+
+J. Administration, Audit and Security
+- Organisation profile, facilities, roles, policies, notification templates and working-hour rules.
+- Immutable audit trail for sign-in/security events, worker changes, credential review, shift edits, offer dispatch, acceptance, override, export and admin actions.
+- MFA-ready authentication, secure password reset, session revocation, rate limiting, CSRF protections where relevant, secure headers, input validation and least privilege.
+- Encrypt data in transit and at rest through managed infrastructure.
+- Backups, restore procedures, retention policies and deletion workflows.
+- Privacy request workflow and data export.
+- Australian Privacy Act / APP considerations, applicable state/territory requirements, NDIS and aged-care obligations must be reviewed by qualified counsel and compliance specialists. Do not claim compliance solely because controls exist.
+- Provide a security and privacy implementation checklist.
+
+INFORMATION ARCHITECTURE
+Public website:
+- Home
+- Product / How it works
+- Solutions: Aged Care, Disability Support, Community Care
+- Integrations
+- Security & Privacy
+- Pricing
+- Resources / Guides
+- Contact / Book a demo
+- Sign in
+
+Authenticated manager app:
+- Overview
+- Coverage Queue
+- Shifts
+- Workforce
+- Facilities
+- Coverage Policies
+- Analytics
+- Integrations
+- Notifications
+- Settings
+- Billing
+- Audit Log
+
+Worker app:
+- Home
+- Shift Offers
+- My Shifts
+- Availability
+- Profile
+- Qualifications
+- Notifications
+
+DESIGN REQUIREMENTS
+- Desktop app shell: compact left sidebar, top search/command entry, facility selector, notification centre and account menu.
+- Dashboard: high-signal KPI row, coverage trend, urgent queue and upcoming shifts.
+- Coverage queue: priority, shift time, role, facility, time open, candidate count and current escalation stage.
+- Shift detail: timeline, eligibility explanation, offer delivery history and assignment status.
+- Worker directory: useful filters, clear credential status and accessible profile drawer.
+- Mobile: bottom navigation for worker app; responsive manager tables become readable cards.
+- Use consistent spacing, typography, states, icons and components.
+- Include skeletons, empty states, error states, confirmations, toasts and undo where safe.
+- Meet WCAG 2.2 AA targets: keyboard navigation, visible focus, contrast, labels, semantic structure and screen-reader feedback.
+- Avoid decorative charts without operational meaning.
+
+PUBLIC WEBSITE CONVERSION STRATEGY
+Hero headline: “Never let a staffing gap become a care disruption.”
+Subheading: “CoverPulse helps care teams find eligible cover, automate shift offers and see workforce coverage clearly—without replacing the systems they already rely on.”
+Primary CTA: Book a demo.
+Secondary CTA: Explore how it works.
+Show a real product screenshot or product UI, not generic stock imagery.
+Explain the workflow in three steps: Identify the gap → Reach eligible workers → Confirm coverage.
+Use proof only when verified. Until real customer evidence exists, use clearly labelled demo data and do not invent testimonials, customer logos, performance claims or savings.
+Include security, integration and implementation sections, pricing guidance and a short demo request form.
+Capture lead consent and privacy notice.
+
+COMMERCIAL MODEL
+Support configurable monthly subscriptions with Essential, Growth and Enterprise tiers, onboarding fees, usage-based messaging and custom integrations. Build plan entitlements and limits into the backend. Initial pricing hypotheses may be tested with customers but must remain editable. Provide trial and paid-pilot workflows, quote generation and annual billing option.
+
+DATA MODEL — MINIMUM ENTITIES
+Tenant, User, Membership, Role, Permission, Facility, WorkerProfile, WorkerFacility, Skill, Qualification, QualificationEvidence, AvailabilityWindow, Shift, ShiftRequirement, ShiftAssignment, CoveragePolicy, CoverageRun, CandidateMatch, ShiftOffer, OfferEvent, Notification, Integration, WebhookEndpoint, WebhookDelivery, Subscription, InvoiceReference, AuditEvent, SupportAccessGrant, ConsentRecord.
+Use UUIDs, created_at/updated_at, soft deletion only where justified, indexes for tenant/facility/time/status queries and explicit retention rules. Document relationships and critical constraints.
+
+SEED DATA
+Create a synthetic demo organisation with at least three facilities, 30 fictional workers, multiple roles, realistic qualifications, 20–30 shifts in varied states, pending offers, accepted offers, expired credentials, and 30 days of analytics. Mark all demo data as fictional. Never use real patient or worker data.
+
+DELIVERY PHASES
+Phase 1 — Foundation: design system, auth, tenant isolation, organisations, facilities, roles and seed data.
+Phase 2 — Core coverage: workforce, qualifications, shifts, eligibility, matching, offers and worker acceptance.
+Phase 3 — Automation: policies, SMS/email adapters, retries, escalation, event timeline and audit.
+Phase 4 — Intelligence: analytics, cost assumptions, exports and AI-assisted explanations.
+Phase 5 — Commercial: website, lead capture, billing, onboarding and plan entitlements.
+Phase 6 — Hardening: security review, accessibility, performance, backups, integration contracts and production deployment.
+
+QUALITY GATES
+- Every major button and form must work; no dead-end UI.
+- No fake metrics presented as real.
+- No secrets in repository.
+- All protected routes and mutations enforce server-side permissions.
+- Automated tests for tenant isolation, role permissions, eligibility rules, shift overlap, concurrent acceptance, offer idempotency, escalation stop conditions, billing webhooks and audit creation.
+- Responsive checks at 360, 390, 430, 768, 1024, 1280 and 1440+ widths.
+- Add unit, integration and end-to-end tests for critical flows.
+- Add database migrations, seed scripts, setup instructions, .env.example, architecture notes and deployment guide.
+- Add monitoring, error handling, structured logs and operational runbooks.
+- Do not leave TODO placeholders for critical workflows. If a third-party credential is missing, implement the adapter, document required setup and show a clear disconnected state.
+
+ACCEPTANCE SCENARIO
+A manager at Facility A creates an urgent RN night shift requiring verified qualifications. The engine filters out unavailable, unqualified, restricted and overlapping workers, then ranks eligible candidates transparently. The manager starts an automated coverage policy. Workers receive offers, one accepts, the server atomically confirms the assignment, further offers stop, the manager sees the covered status and event timeline, and analytics update. A second scenario must demonstrate no acceptance, escalation to a manager and an auditable unresolved shift. A third must prove that a worker from another tenant cannot access any of the organisation's records.
+
+BUILD PROCESS
+First inspect the existing project and report its stack, structure and current implementation. Then produce a concise architecture plan and implementation checklist. Build incrementally, run tests after each phase, fix failures and keep the UI consistent. Do not rewrite working infrastructure without a reason. Do not deploy, publish, contact customers, spend money or alter external production systems without explicit approval. Finish with a concise delivery report listing implemented features, tests run, known limitations, environment variables required and exact local run/deployment steps.

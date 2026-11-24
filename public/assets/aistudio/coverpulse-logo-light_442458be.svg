@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 140" role="img" aria-label="CoverPulse healthcare workforce intelligence">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0E8BFF"/><stop offset="1" stop-color="#06B6D4"/></linearGradient></defs>
+  <g transform="translate(8 6) scale(1.0)">
+    <path d="M91 24A52 52 0 1 0 91 104" fill="none" stroke="url(#g)" stroke-width="17" stroke-linecap="round"/>
+    <path d="M13 66h30l11-23 15 45 11-27h35" fill="none" stroke="#06B6D4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="150" y="78" font-family="Plus Jakarta Sans, Inter, Arial, sans-serif" font-size="66" font-weight="750" letter-spacing="-2" fill="#0B1F44">Cover<tspan fill="#089BCB">Pulse</tspan></text>
+  <text x="153" y="111" font-family="Plus Jakarta Sans, Inter, Arial, sans-serif" font-size="14" font-weight="650" letter-spacing="3.1" fill="#52647D">HEALTHCARE WORKFORCE INTELLIGENCE</text>
+</svg>

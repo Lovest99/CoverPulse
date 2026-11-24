@@ -1,0 +1,6 @@
+{
+  "name": "CoverPulse",
+  "description": "Healthcare Workforce Intelligence — multi-tenant shift coverage, deterministic eligibility matching, automated offer escalation, and worker PWA for Australian aged-care, disability-support, and community-care providers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
